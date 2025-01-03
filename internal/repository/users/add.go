@@ -3,21 +3,33 @@ package users
 import (
 	"context"
 	"fmt"
-
-	"github.com/ksusonic/kanban/internal/models"
 )
 
-func (r *Repository) Add(ctx context.Context, user *models.User) (int, error) {
+const insertQuery = `
+		with new_user as (
+			insert into users (username, first_name, avatar_url)
+				values ($2, $3, $4)
+				returning id)
+		insert
+		into telegram_users (telegram_id, user_id)
+		select $1, id
+		from new_user
+		returning user_id`
+
+func (r *Repository) AddTelegramUser(
+	ctx context.Context,
+	username string,
+	telegramID int64,
+	firstName string,
+	avatarURL *string,
+) (int, error) {
 	rows, err := r.db.Conn(ctx).Query(
 		ctx,
-		`
-		insert into users (telegram_id, username, first_name, last_name)
-			values ($1, $2, $3, $4)
-		returning id`,
-		user.TelegramID,
-		user.Username,
-		user.FirstName,
-		user.LastName,
+		insertQuery,
+		telegramID,
+		username,
+		firstName,
+		avatarURL,
 	)
 	if err != nil {
 		return 0, err
@@ -26,7 +38,7 @@ func (r *Repository) Add(ctx context.Context, user *models.User) (int, error) {
 	defer rows.Close()
 
 	if !rows.Next() {
-		return 0, fmt.Errorf("user not added: %v", user)
+		return 0, fmt.Errorf("user %s not added: %w", username, err)
 	}
 
 	var id int

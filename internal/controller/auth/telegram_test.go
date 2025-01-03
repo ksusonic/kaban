@@ -46,7 +46,13 @@ func TestController_TelegramCallback(t *testing.T) {
 					"&hash=d7590bb4172bdb9029a2f08c976aeb86167037fcf788ba6c6a2aad849c8b3d1b",
 			},
 			fields: fields{
-				mockUserRepo: auth.NewMockuserRepo,
+				mockUserRepo: func(ctrl *gomock.Controller) *auth.MockuserRepo {
+					mock := auth.NewMockuserRepo(ctrl)
+					mock.EXPECT().GetUserIDByTelegramID(gomock.Any(), int64(123)).
+						Return(777, nil)
+
+					return mock
+				},
 			},
 			expectedCode: http.StatusOK,
 		},
@@ -65,6 +71,8 @@ func TestController_TelegramCallback(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
 			mockCtrl := gomock.NewController(t)
+
+			gin.SetMode(gin.TestMode)
 
 			engine := gin.Default()
 			engine.GET("/auth/tg-callback", auth.NewController(

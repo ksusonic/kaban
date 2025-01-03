@@ -41,19 +41,19 @@ func (m *MockuserRepo) EXPECT() *MockuserRepoMockRecorder {
 	return m.recorder
 }
 
-// Add mocks base method.
-func (m *MockuserRepo) Add(ctx context.Context, user *models.User) (int, error) {
+// AddTelegramUser mocks base method.
+func (m *MockuserRepo) AddTelegramUser(ctx context.Context, username string, telegramID int64, firstName string, avatarURL *string) (int, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Add", ctx, user)
+	ret := m.ctrl.Call(m, "AddTelegramUser", ctx, username, telegramID, firstName, avatarURL)
 	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Add indicates an expected call of Add.
-func (mr *MockuserRepoMockRecorder) Add(ctx, user any) *gomock.Call {
+// AddTelegramUser indicates an expected call of AddTelegramUser.
+func (mr *MockuserRepoMockRecorder) AddTelegramUser(ctx, username, telegramID, firstName, avatarURL any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockuserRepo)(nil).Add), ctx, user)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTelegramUser", reflect.TypeOf((*MockuserRepo)(nil).AddTelegramUser), ctx, username, telegramID, firstName, avatarURL)
 }
 
 // GetByID mocks base method.
@@ -84,4 +84,19 @@ func (m *MockuserRepo) GetByTelegramID(ctx context.Context, telegramID int64) (*
 func (mr *MockuserRepoMockRecorder) GetByTelegramID(ctx, telegramID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByTelegramID", reflect.TypeOf((*MockuserRepo)(nil).GetByTelegramID), ctx, telegramID)
+}
+
+// GetUserIDByTelegramID mocks base method.
+func (m *MockuserRepo) GetUserIDByTelegramID(ctx context.Context, telegramID int64) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserIDByTelegramID", ctx, telegramID)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserIDByTelegramID indicates an expected call of GetUserIDByTelegramID.
+func (mr *MockuserRepoMockRecorder) GetUserIDByTelegramID(ctx, telegramID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserIDByTelegramID", reflect.TypeOf((*MockuserRepo)(nil).GetUserIDByTelegramID), ctx, telegramID)
 }

@@ -8,9 +8,10 @@ import (
 	"testing"
 
 	"github.com/joho/godotenv"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/ksusonic/kanban/internal/repository/postgres"
 	"github.com/ksusonic/kanban/internal/repository/users"
-	"github.com/stretchr/testify/assert"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/require"
@@ -39,10 +40,9 @@ func TestRepository_Insert(t *testing.T) {
 
 	telegramID := int64(123456789)
 	user := &models.User{
-		TelegramID: telegramID,
+		TelegramID: &telegramID,
 		Username:   "testuser",
 		FirstName:  "Test",
-		LastName:   "User",
 	}
 
 	txCtx, err := db.TransactionContext(ctx)
@@ -54,15 +54,26 @@ func TestRepository_Insert(t *testing.T) {
 		}
 	}(db, txCtx)
 
-	id, err := repo.Add(txCtx, user)
+	userID, err := repo.AddTelegramUser(
+		txCtx,
+		user.Username,
+		telegramID,
+		user.FirstName,
+		user.AvatarURL,
+	)
 	require.NoError(t, err)
 
-	actual, err := repo.GetByID(txCtx, id)
+	actual, err := repo.GetByTelegramID(txCtx, telegramID)
 	require.NoError(t, err)
 
+	user.ID = actual.ID
 	assert.Equal(t, user, actual)
 
-	actual, err = repo.GetByTelegramID(txCtx, telegramID)
+	actualUserID, err := repo.GetUserIDByTelegramID(txCtx, telegramID)
+	require.NoError(t, err)
+	assert.Equal(t, userID, actualUserID)
+
+	actual, err = repo.GetByID(txCtx, user.ID)
 	require.NoError(t, err)
 
 	assert.Equal(t, user, actual)

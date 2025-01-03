@@ -8,7 +8,14 @@ import (
 )
 
 type userRepo interface {
-	Add(ctx context.Context, user *models.User) (int, error)
+	AddTelegramUser(
+		ctx context.Context,
+		username string,
+		telegramID int64,
+		firstName string,
+		avatarURL *string,
+	) (int, error)
 	GetByID(ctx context.Context, id int) (*models.User, error)
 	GetByTelegramID(ctx context.Context, telegramID int64) (*models.User, error)
+	GetUserIDByTelegramID(ctx context.Context, telegramID int64) (int, error)
 }

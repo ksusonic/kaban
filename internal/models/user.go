@@ -3,8 +3,8 @@ package models
 type User struct {
 	ID         int
 	Username   string
-	TelegramID int64
 	FirstName  string
-	LastName   string
+	TelegramID *int64
+	LastName   *string
 	AvatarURL  *string
 }

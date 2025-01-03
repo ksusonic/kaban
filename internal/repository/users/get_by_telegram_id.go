@@ -7,19 +7,18 @@ import (
 )
 
 func (r *Repository) GetByTelegramID(ctx context.Context, telegramID int64) (*models.User, error) {
-	var user models.User
-
 	rows, err := r.db.Conn(ctx).Query(
 		ctx,
 		`
 		select 
+		    id,
 	    	username,
-	    	telegram_id, 
+	    	tg.telegram_id, 
 	    	first_name, 
 			last_name,
 			avatar_url
 		from 
-			users 
+			users left join telegram_users tg on users.id = tg.user_id
 		where 
 			telegram_id = $1`,
 		telegramID,
@@ -30,8 +29,9 @@ func (r *Repository) GetByTelegramID(ctx context.Context, telegramID int64) (*mo
 
 	defer rows.Close()
 
+	var user models.User
 	if rows.Next() {
-		err = rows.Scan(&user.Username, &user.TelegramID, &user.FirstName, &user.LastName, &user.AvatarURL)
+		err = rows.Scan(&user.ID, &user.Username, &user.TelegramID, &user.FirstName, &user.LastName, &user.AvatarURL)
 		if err != nil {
 			return nil, err
 		}
