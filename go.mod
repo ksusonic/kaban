@@ -9,6 +9,7 @@ require (
 	github.com/lmittmann/tint v1.0.6
 	github.com/samber/slog-gin v1.13.6
 	github.com/stretchr/testify v1.10.0
+	go.uber.org/mock v0.5.0
 )
 
 require (

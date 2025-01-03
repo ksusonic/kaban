@@ -10,10 +10,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/ksusonic/kanban/internal/controller"
-	userctrl "github.com/ksusonic/kanban/internal/controller/user"
+	"github.com/joho/godotenv"
 
+	"github.com/ksusonic/kanban/internal/controller"
+	"github.com/ksusonic/kanban/internal/controller/auth"
 	"github.com/ksusonic/kanban/internal/logger"
+	"github.com/ksusonic/kanban/internal/models"
 	"github.com/ksusonic/kanban/internal/repository"
 )
 
@@ -26,33 +28,43 @@ const (
 )
 
 func main() {
-	var (
-		ctx = context.Background()
-		log = logger.New()
+	ctx := context.Background()
 
+	var (
 		debugFlag = flag.Bool("debug", false, "enable debug logging")
 		httpAddr  = flag.String("http", "localhost:8080", "HTTP service address")
 	)
 
 	flag.Parse()
 
+	err := godotenv.Load()
+	if err != nil {
+		panic(err)
+	}
+
+	log := logger.New(*debugFlag)
+
 	repo, repoClose, err := repository.NewRepository(ctx, log)
 	if err != nil {
-		log.ErrorContext(ctx, "init pgx pool", "error", err)
+		log.Error("init pgx pool", "error", err)
 		os.Exit(1)
 	}
 
 	defer repoClose()
 
 	router := controller.NewRouter(log, *debugFlag)
+	router.LoadHTMLGlob("templates/*.tmpl")
 
 	{
-		apiGroup := router.AddGroup("/api")
-		{
-			ctrl := userctrl.NewController(repo.UserRepo(), log)
-			userGroup := apiGroup.Group("/user")
-			userGroup.POST("/login", ctrl.Login)
+		botCfg := models.BotCfg{
+			Name:  os.Getenv("BOT_NAME"),
+			Token: os.Getenv("BOT_TOKEN"),
 		}
+		authCtrl := auth.NewController(repo.UserRepo(), botCfg, log)
+		authGroup := router.Group("/auth")
+
+		authGroup.GET("/", authCtrl.Page) // TODO: @sonanted - render page on frontend
+		authGroup.GET("/tg-callback", authCtrl.TelegramCallback)
 	}
 
 	server := &http.Server{

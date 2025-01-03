@@ -1,4 +1,5 @@
-package user
+//go:generate mockgen -source deps.go -destination deps_mock.go -package auth
+package auth
 
 import (
 	"context"

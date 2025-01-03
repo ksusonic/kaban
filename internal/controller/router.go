@@ -50,3 +50,11 @@ func (r *Router) Handler() http.Handler {
 func (r *Router) AddGroup(relativePath string, handlers ...gin.HandlerFunc) gin.IRouter {
 	return r.engine.Group(relativePath, handlers...)
 }
+
+func (r *Router) LoadHTMLGlob(path string) {
+	r.engine.LoadHTMLGlob(path)
+}
+
+func (r *Router) Group(relativePath string, handlers ...gin.HandlerFunc) *gin.RouterGroup {
+	return r.engine.Group(relativePath, handlers...)
+}
