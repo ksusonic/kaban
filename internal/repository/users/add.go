@@ -7,7 +7,7 @@ import (
 	"github.com/ksusonic/kanban/internal/models"
 )
 
-func (r *Repository) Insert(ctx context.Context, user *models.User) (int, error) {
+func (r *Repository) Add(ctx context.Context, user *models.User) (int, error) {
 	rows, err := r.db.Conn(ctx).Query(
 		ctx,
 		`

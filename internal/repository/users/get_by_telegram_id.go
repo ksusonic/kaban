@@ -6,7 +6,7 @@ import (
 	"github.com/ksusonic/kanban/internal/models"
 )
 
-func (r *Repository) SelectByTelegramID(ctx context.Context, telegramID int64) (*models.User, error) {
+func (r *Repository) GetByTelegramID(ctx context.Context, telegramID int64) (*models.User, error) {
 	var user models.User
 
 	rows, err := r.db.Conn(ctx).Query(

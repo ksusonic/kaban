@@ -26,3 +26,7 @@ func NewRepository(
 		userRepo: users.NewRepository(db),
 	}, closer, err
 }
+
+func (r *Repository) UserRepo() *users.Repository {
+	return r.userRepo
+}

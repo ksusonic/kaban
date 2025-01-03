@@ -54,15 +54,15 @@ func TestRepository_Insert(t *testing.T) {
 		}
 	}(db, txCtx)
 
-	id, err := repo.Insert(txCtx, user)
+	id, err := repo.Add(txCtx, user)
 	require.NoError(t, err)
 
-	actual, err := repo.SelectByID(txCtx, id)
+	actual, err := repo.GetByID(txCtx, id)
 	require.NoError(t, err)
 
 	assert.Equal(t, user, actual)
 
-	actual, err = repo.SelectByTelegramID(txCtx, telegramID)
+	actual, err = repo.GetByTelegramID(txCtx, telegramID)
 	require.NoError(t, err)
 
 	assert.Equal(t, user, actual)

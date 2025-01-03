@@ -6,7 +6,7 @@ import (
 	"github.com/ksusonic/kanban/internal/models"
 )
 
-func (r *Repository) SelectByID(ctx context.Context, id int) (*models.User, error) {
+func (r *Repository) GetByID(ctx context.Context, id int) (*models.User, error) {
 	var user models.User
 
 	rows, err := r.db.Conn(ctx).Query(
