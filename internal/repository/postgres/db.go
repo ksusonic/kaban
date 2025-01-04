@@ -30,6 +30,14 @@ func NewDB(ctx context.Context, log *slog.Logger) (*DB, func(), error) {
 	}
 
 	pool, err := pgxpool.NewWithConfig(ctx, conf)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if err = pool.Ping(ctx); err != nil {
+		return nil, nil, fmt.Errorf("ping db: %w", err)
+	}
+
 	return &DB{pool}, pool.Close, err
 }
 
