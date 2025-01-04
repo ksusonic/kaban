@@ -15,7 +15,9 @@ type userRepo interface {
 		firstName string,
 		avatarURL *string,
 	) (int, error)
-	GetByID(ctx context.Context, id int) (*models.User, error)
-	GetByTelegramID(ctx context.Context, telegramID int64) (*models.User, error)
 	GetUserIDByTelegramID(ctx context.Context, telegramID int64) (int, error)
+}
+
+type authModule interface {
+	GenerateJWTToken(userID int) (*models.JWTToken, error)
 }

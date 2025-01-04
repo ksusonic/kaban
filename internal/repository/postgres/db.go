@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 
 	"github.com/jackc/pgx/v5"
@@ -34,9 +35,11 @@ func NewDB(ctx context.Context, log *slog.Logger) (*DB, func(), error) {
 		return nil, nil, err
 	}
 
+	log.DebugContext(ctx, "pinging postgres", "host", conf.ConnConfig.Host, "port", conf.ConnConfig.Port)
 	if err = pool.Ping(ctx); err != nil {
 		return nil, nil, fmt.Errorf("ping db: %w", err)
 	}
+	log.DebugContext(ctx, "pg ping OK")
 
 	return &DB{pool}, pool.Close, err
 }

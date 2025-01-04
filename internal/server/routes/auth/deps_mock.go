@@ -56,36 +56,6 @@ func (mr *MockuserRepoMockRecorder) AddTelegramUser(ctx, username, telegramID, f
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTelegramUser", reflect.TypeOf((*MockuserRepo)(nil).AddTelegramUser), ctx, username, telegramID, firstName, avatarURL)
 }
 
-// GetByID mocks base method.
-func (m *MockuserRepo) GetByID(ctx context.Context, id int) (*models.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByID", ctx, id)
-	ret0, _ := ret[0].(*models.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetByID indicates an expected call of GetByID.
-func (mr *MockuserRepoMockRecorder) GetByID(ctx, id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockuserRepo)(nil).GetByID), ctx, id)
-}
-
-// GetByTelegramID mocks base method.
-func (m *MockuserRepo) GetByTelegramID(ctx context.Context, telegramID int64) (*models.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByTelegramID", ctx, telegramID)
-	ret0, _ := ret[0].(*models.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetByTelegramID indicates an expected call of GetByTelegramID.
-func (mr *MockuserRepoMockRecorder) GetByTelegramID(ctx, telegramID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByTelegramID", reflect.TypeOf((*MockuserRepo)(nil).GetByTelegramID), ctx, telegramID)
-}
-
 // GetUserIDByTelegramID mocks base method.
 func (m *MockuserRepo) GetUserIDByTelegramID(ctx context.Context, telegramID int64) (int, error) {
 	m.ctrl.T.Helper()
@@ -99,4 +69,43 @@ func (m *MockuserRepo) GetUserIDByTelegramID(ctx context.Context, telegramID int
 func (mr *MockuserRepoMockRecorder) GetUserIDByTelegramID(ctx, telegramID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserIDByTelegramID", reflect.TypeOf((*MockuserRepo)(nil).GetUserIDByTelegramID), ctx, telegramID)
+}
+
+// MockauthModule is a mock of authModule interface.
+type MockauthModule struct {
+	ctrl     *gomock.Controller
+	recorder *MockauthModuleMockRecorder
+	isgomock struct{}
+}
+
+// MockauthModuleMockRecorder is the mock recorder for MockauthModule.
+type MockauthModuleMockRecorder struct {
+	mock *MockauthModule
+}
+
+// NewMockauthModule creates a new mock instance.
+func NewMockauthModule(ctrl *gomock.Controller) *MockauthModule {
+	mock := &MockauthModule{ctrl: ctrl}
+	mock.recorder = &MockauthModuleMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockauthModule) EXPECT() *MockauthModuleMockRecorder {
+	return m.recorder
+}
+
+// GenerateJWTToken mocks base method.
+func (m *MockauthModule) GenerateJWTToken(userID int) (*models.JWTToken, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GenerateJWTToken", userID)
+	ret0, _ := ret[0].(*models.JWTToken)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GenerateJWTToken indicates an expected call of GenerateJWTToken.
+func (mr *MockauthModuleMockRecorder) GenerateJWTToken(userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateJWTToken", reflect.TypeOf((*MockauthModule)(nil).GenerateJWTToken), userID)
 }

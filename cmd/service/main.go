@@ -12,11 +12,9 @@ import (
 
 	"github.com/joho/godotenv"
 
-	"github.com/ksusonic/kanban/internal/controller"
-	"github.com/ksusonic/kanban/internal/controller/auth"
 	"github.com/ksusonic/kanban/internal/logger"
-	"github.com/ksusonic/kanban/internal/models"
 	"github.com/ksusonic/kanban/internal/repository"
+	"github.com/ksusonic/kanban/internal/server"
 )
 
 const (
@@ -29,12 +27,8 @@ const (
 
 func main() {
 	ctx := context.Background()
-
-	var (
-		debugFlag = flag.Bool("debug", false, "enable debug logging")
-		httpAddr  = flag.String("http", "localhost:8080", "HTTP service address")
-	)
-
+	debugFlag := flag.Bool("debug", false, "enable debug logging")
+	httpAddr := flag.String("http", "localhost:8080", "HTTP service address")
 	flag.Parse()
 
 	err := godotenv.Load()
@@ -52,31 +46,20 @@ func main() {
 
 	defer repoClose()
 
-	router := controller.NewRouter(log, *debugFlag)
-	router.LoadHTMLGlob("templates/*.tmpl")
+	handler := server.BuildEngine(
+		repo,
+		log,
+		*debugFlag,
+	)
 
-	{
-		botCfg := models.BotCfg{
-			Name:  os.Getenv("BOT_NAME"),
-			Token: os.Getenv("BOT_TOKEN"),
-		}
-		authCtrl := auth.NewController(repo.UserRepo(), botCfg, log)
-		authGroup := router.Group("/auth")
-
-		authGroup.GET("/", authCtrl.Page) // TODO: @sonanted - render page on frontend
-		authGroup.GET("/tg-callback", authCtrl.TelegramCallback)
-	}
-
-	server := &http.Server{
+	run(ctx, &http.Server{
 		Addr:              *httpAddr,
-		Handler:           router.Handler(),
+		Handler:           handler,
 		ReadTimeout:       ReadTimeout,
 		ReadHeaderTimeout: ReadHeaderTimeout,
 		WriteTimeout:      WriteTimeout,
 		IdleTimeout:       IdleTimeout,
-	}
-
-	run(ctx, server, log)
+	}, log)
 }
 
 func run(ctx context.Context, srv *http.Server, log logger.Logger) {

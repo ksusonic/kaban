@@ -4,29 +4,23 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	"github.com/ksusonic/kanban/internal/controller/auth"
 	"github.com/ksusonic/kanban/internal/logger"
 	"github.com/ksusonic/kanban/internal/models"
+	"github.com/ksusonic/kanban/internal/server/routes/auth"
 )
 
 func TestController_TelegramCallback(t *testing.T) {
-	const (
-		botName  = "Kanban"
-		botToken = "super-secret-token"
-	)
-
-	botCfg := models.BotCfg{
-		Name:  botName,
-		Token: botToken,
-	}
+	t.Setenv("BOT_TOKEN", "super-secret-token")
 
 	type fields struct {
-		mockUserRepo func(*gomock.Controller) *auth.MockuserRepo
+		mockUserRepo   func(*gomock.Controller) *auth.MockuserRepo
+		mockAuthModule func(*gomock.Controller) *auth.MockauthModule
 	}
 	type args struct {
 		query string
@@ -37,6 +31,7 @@ func TestController_TelegramCallback(t *testing.T) {
 		args         args
 		fields       fields
 		expectedCode int
+		expectedBody string
 	}{
 		{
 			name: "success",
@@ -53,8 +48,19 @@ func TestController_TelegramCallback(t *testing.T) {
 
 					return mock
 				},
+				mockAuthModule: func(ctrl *gomock.Controller) *auth.MockauthModule {
+					mock := auth.NewMockauthModule(ctrl)
+					mock.EXPECT().GenerateJWTToken(777).
+						Return(&models.JWTToken{
+							Token:   "JWT-TEST-TOKEN",
+							Expires: time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
+						}, nil)
+
+					return mock
+				},
 			},
 			expectedCode: http.StatusOK,
+			expectedBody: `{"expires":"2009-11-10T23:00:00Z","token":"JWT-TEST-TOKEN"}`,
 		},
 		{
 			name: "no query",
@@ -62,9 +68,11 @@ func TestController_TelegramCallback(t *testing.T) {
 				query: "/auth/tg-callback",
 			},
 			fields: fields{
-				mockUserRepo: auth.NewMockuserRepo,
+				mockUserRepo:   auth.NewMockuserRepo,
+				mockAuthModule: auth.NewMockauthModule,
 			},
 			expectedCode: http.StatusBadRequest,
+			expectedBody: `{"error":"validation"}`,
 		},
 	}
 	for _, tt := range tests {
@@ -77,7 +85,7 @@ func TestController_TelegramCallback(t *testing.T) {
 			engine := gin.Default()
 			engine.GET("/auth/tg-callback", auth.NewController(
 				tt.fields.mockUserRepo(mockCtrl),
-				botCfg,
+				tt.fields.mockAuthModule(mockCtrl),
 				logger.NewDisabled(),
 			).TelegramCallback)
 
@@ -85,6 +93,7 @@ func TestController_TelegramCallback(t *testing.T) {
 			engine.ServeHTTP(w, req)
 
 			assert.Equal(t, tt.expectedCode, w.Code)
+			assert.Equal(t, tt.expectedBody, w.Body.String())
 		})
 	}
 }

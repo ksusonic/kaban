@@ -8,3 +8,7 @@ type User struct {
 	LastName   *string
 	AvatarURL  *string
 }
+
+type UserIdentity struct {
+	UserID int
+}

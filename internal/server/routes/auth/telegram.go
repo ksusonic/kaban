@@ -6,8 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/ksusonic/kanban/internal/auth/telegram"
 	"github.com/ksusonic/kanban/internal/models"
-	"github.com/ksusonic/kanban/internal/telegram"
 )
 
 type TelegramCallbackData struct {
@@ -63,11 +63,15 @@ func (ctrl *Controller) TelegramCallback(c *gin.Context) {
 		}
 	}
 
-	ctrl.tgAuth(c, userID)
+	jwt, err := ctrl.authModule.GenerateJWTToken(userID)
+	if err != nil {
+		ctrl.log.ErrorContext(ctx, "generate token", err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
 
-	c.JSON(http.StatusOK, gin.H{"user_id": userID})
-}
-
-func (ctrl *Controller) tgAuth(_ *gin.Context, _ int) {
-	panic("not implemented")
+	c.JSON(http.StatusOK, gin.H{
+		"token":   jwt.Token,
+		"expires": jwt.Expires,
+	})
 }
