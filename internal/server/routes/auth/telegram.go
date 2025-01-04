@@ -1,7 +1,9 @@
 package auth
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -38,29 +40,10 @@ func (ctrl *Controller) TelegramCallback(c *gin.Context) {
 
 	ctrl.log.DebugContext(ctx, "telegram callback", "callback", callbackData)
 
-	userID, err := ctrl.userRepo.GetUserIDByTelegramID(ctx, callbackData.ID)
+	userID, err := ctrl.handleTGUser(ctx, &callbackData)
 	if err != nil {
-		switch {
-		case errors.Is(err, models.ErrNotFound):
-			ctrl.log.InfoContext(ctx, "new user", "username", callbackData.Username)
-
-			_, err = ctrl.userRepo.AddTelegramUser(
-				ctx,
-				callbackData.Username,
-				callbackData.ID,
-				callbackData.FirstName,
-				callbackData.PhotoURL,
-			)
-			if err != nil {
-				ctrl.log.ErrorContext(ctx, "add new tg user", err, "user", callbackData)
-				c.AbortWithStatus(http.StatusInternalServerError)
-				return
-			}
-		default:
-			ctrl.log.ErrorContext(ctx, "get user by telegram", err)
-			c.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
+		ctrl.log.ErrorContext(ctx, "handle tg user", err, "callback", callbackData)
+		c.AbortWithStatus(http.StatusInternalServerError)
 	}
 
 	jwt, err := ctrl.authModule.GenerateJWTToken(userID)
@@ -74,4 +57,32 @@ func (ctrl *Controller) TelegramCallback(c *gin.Context) {
 		"token":   jwt.Token,
 		"expires": jwt.Expires,
 	})
+}
+
+func (ctrl *Controller) handleTGUser(ctx context.Context, callbackData *TelegramCallbackData) (int, error) {
+	// Check if already registered
+	userID, err := ctrl.userRepo.GetUserIDByTelegramID(ctx, callbackData.ID)
+	if err == nil {
+		return userID, nil
+	}
+
+	// Register or error
+	if errors.Is(err, models.ErrNotFound) {
+		ctrl.log.InfoContext(ctx, "new user", "username", callbackData.Username)
+
+		userID, err = ctrl.userRepo.AddTelegramUser(
+			ctx,
+			callbackData.Username,
+			callbackData.ID,
+			callbackData.FirstName,
+			callbackData.PhotoURL,
+		)
+		if err != nil {
+			return 0, fmt.Errorf("add new: %w", err)
+		}
+
+		return userID, nil
+	}
+
+	return 0, fmt.Errorf("get userID by telegramID: %w", err)
 }
