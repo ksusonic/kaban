@@ -56,19 +56,19 @@ func (mr *MockuserRepoMockRecorder) AddTelegramUser(ctx, username, telegramID, f
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTelegramUser", reflect.TypeOf((*MockuserRepo)(nil).AddTelegramUser), ctx, username, telegramID, firstName, avatarURL)
 }
 
-// GetUserIDByTelegramID mocks base method.
-func (m *MockuserRepo) GetUserIDByTelegramID(ctx context.Context, telegramID int64) (int, error) {
+// GetByTelegramID mocks base method.
+func (m *MockuserRepo) GetByTelegramID(ctx context.Context, telegramID int64) (*models.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserIDByTelegramID", ctx, telegramID)
-	ret0, _ := ret[0].(int)
+	ret := m.ctrl.Call(m, "GetByTelegramID", ctx, telegramID)
+	ret0, _ := ret[0].(*models.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetUserIDByTelegramID indicates an expected call of GetUserIDByTelegramID.
-func (mr *MockuserRepoMockRecorder) GetUserIDByTelegramID(ctx, telegramID any) *gomock.Call {
+// GetByTelegramID indicates an expected call of GetByTelegramID.
+func (mr *MockuserRepoMockRecorder) GetByTelegramID(ctx, telegramID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserIDByTelegramID", reflect.TypeOf((*MockuserRepo)(nil).GetUserIDByTelegramID), ctx, telegramID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByTelegramID", reflect.TypeOf((*MockuserRepo)(nil).GetByTelegramID), ctx, telegramID)
 }
 
 // MockauthModule is a mock of authModule interface.

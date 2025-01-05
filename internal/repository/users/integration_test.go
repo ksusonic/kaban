@@ -22,8 +22,7 @@ import (
 func TestRepository_Insert(t *testing.T) {
 	ctx := context.Background()
 
-	err := godotenv.Load()
-	require.NoError(t, err)
+	_ = godotenv.Load(".env", "../../../.env")
 
 	poolCfg, err := pgxpool.ParseConfig("")
 	require.NoError(t, err)
@@ -39,10 +38,12 @@ func TestRepository_Insert(t *testing.T) {
 	repo := users.NewRepository(db)
 
 	telegramID := int64(123456789)
-	user := &models.User{
-		TelegramID: &telegramID,
+	testAvatar := "testtestavatar"
+	expectedUser := &models.User{
 		Username:   "testuser",
 		FirstName:  "Test",
+		TelegramID: &telegramID,
+		AvatarURL:  &testAvatar,
 	}
 
 	txCtx, err := db.TransactionContext(ctx)
@@ -56,25 +57,22 @@ func TestRepository_Insert(t *testing.T) {
 
 	userID, err := repo.AddTelegramUser(
 		txCtx,
-		user.Username,
+		expectedUser.Username,
 		telegramID,
-		user.FirstName,
-		user.AvatarURL,
+		expectedUser.FirstName,
+		expectedUser.AvatarURL,
 	)
 	require.NoError(t, err)
 
-	actual, err := repo.GetByTelegramID(txCtx, telegramID)
+	expectedUser.ID = userID
+
+	actual, err := repo.GetByID(txCtx, userID)
 	require.NoError(t, err)
 
-	user.ID = actual.ID
-	assert.Equal(t, user, actual)
+	assert.Equal(t, expectedUser, actual)
 
-	actualUserID, err := repo.GetUserIDByTelegramID(txCtx, telegramID)
-	require.NoError(t, err)
-	assert.Equal(t, userID, actualUserID)
-
-	actual, err = repo.GetByID(txCtx, user.ID)
+	actual, err = repo.GetByTelegramID(txCtx, telegramID)
 	require.NoError(t, err)
 
-	assert.Equal(t, user, actual)
+	assert.Equal(t, expectedUser, actual)
 }

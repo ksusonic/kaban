@@ -15,7 +15,7 @@ type userRepo interface {
 		firstName string,
 		avatarURL *string,
 	) (int, error)
-	GetUserIDByTelegramID(ctx context.Context, telegramID int64) (int, error)
+	GetByTelegramID(ctx context.Context, telegramID int64) (*models.User, error)
 }
 
 type authModule interface {

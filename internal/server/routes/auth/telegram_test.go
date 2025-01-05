@@ -46,8 +46,8 @@ func TestController_TelegramCallback(t *testing.T) {
 			fields: fields{
 				mockUserRepo: func(ctrl *gomock.Controller) *auth.MockuserRepo {
 					mock := auth.NewMockuserRepo(ctrl)
-					mock.EXPECT().GetUserIDByTelegramID(gomock.Any(), int64(123)).
-						Return(777, nil)
+					mock.EXPECT().GetByTelegramID(gomock.Any(), int64(123)).
+						Return(&models.User{ID: 777}, nil)
 
 					return mock
 				},
@@ -76,8 +76,8 @@ func TestController_TelegramCallback(t *testing.T) {
 			fields: fields{
 				mockUserRepo: func(ctrl *gomock.Controller) *auth.MockuserRepo {
 					mock := auth.NewMockuserRepo(ctrl)
-					mock.EXPECT().GetUserIDByTelegramID(gomock.Any(), int64(123)).
-						Return(0, models.ErrNotFound)
+					mock.EXPECT().GetByTelegramID(gomock.Any(), int64(123)).
+						Return(nil, models.ErrNotFound)
 
 					pic := "pic.jpg"
 					mock.EXPECT().AddTelegramUser(

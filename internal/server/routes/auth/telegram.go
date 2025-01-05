@@ -61,16 +61,16 @@ func (ctrl *Controller) TelegramCallback(c *gin.Context) {
 
 func (ctrl *Controller) handleTGUser(ctx context.Context, callbackData *TelegramCallbackData) (int, error) {
 	// Check if already registered
-	userID, err := ctrl.userRepo.GetUserIDByTelegramID(ctx, callbackData.ID)
+	user, err := ctrl.userRepo.GetByTelegramID(ctx, callbackData.ID)
 	if err == nil {
-		return userID, nil
+		return user.ID, nil
 	}
 
 	// Register or error
 	if errors.Is(err, models.ErrNotFound) {
 		ctrl.log.InfoContext(ctx, "new user", "username", callbackData.Username)
 
-		userID, err = ctrl.userRepo.AddTelegramUser(
+		userID, err := ctrl.userRepo.AddTelegramUser(
 			ctx,
 			callbackData.Username,
 			callbackData.ID,
