@@ -6,16 +6,18 @@ import (
 	"github.com/ksusonic/kanban/internal/models"
 )
 
+const getUserIDByTelegramIDQuery = `
+	select id
+	from users
+			 left join
+		 telegram_users tg
+		 on users.id = tg.user_id
+	where telegram_id = $1`
+
 func (r *Repository) GetUserIDByTelegramID(ctx context.Context, telegramID int64) (int, error) {
 	rows, err := r.db.Conn(ctx).Query(
 		ctx,
-		`
-		select 
-		    id
-		from 
-			users left join telegram_users tg on users.id = tg.user_id
-		where 
-			telegram_id = $1`,
+		getUserIDByTelegramIDQuery,
 		telegramID,
 	)
 	if err != nil {
