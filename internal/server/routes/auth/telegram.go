@@ -70,7 +70,8 @@ func (ctrl *Controller) handleTGUser(ctx context.Context, callbackData *Telegram
 	if errors.Is(err, models.ErrNotFound) {
 		ctrl.log.InfoContext(ctx, "new user", "username", callbackData.Username)
 
-		userID, err := ctrl.userRepo.AddTelegramUser(
+		var userID int
+		userID, err = ctrl.userRepo.AddTelegramUser(
 			ctx,
 			callbackData.Username,
 			callbackData.ID,

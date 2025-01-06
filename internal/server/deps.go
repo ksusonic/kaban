@@ -1,8 +1,8 @@
 package server
 
 import (
-	"github.com/ksusonic/kanban/internal/repository/users"
 	servicemw "github.com/ksusonic/kanban/internal/server/middleware"
+	"github.com/ksusonic/kanban/internal/storage/users"
 )
 
 type Repo interface {

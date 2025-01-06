@@ -13,8 +13,8 @@ import (
 	"github.com/joho/godotenv"
 
 	"github.com/ksusonic/kanban/internal/logger"
-	"github.com/ksusonic/kanban/internal/repository"
 	"github.com/ksusonic/kanban/internal/server"
+	"github.com/ksusonic/kanban/internal/storage"
 )
 
 const (
@@ -38,7 +38,7 @@ func main() {
 
 	log := logger.New(*debugFlag)
 
-	repo, repoClose, err := repository.NewRepository(ctx, log)
+	repo, repoClose, err := storage.NewRepository(ctx, log)
 	if err != nil {
 		log.Error("init pgx pool", "error", err)
 		os.Exit(1)

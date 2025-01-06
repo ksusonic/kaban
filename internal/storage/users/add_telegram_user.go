@@ -38,7 +38,11 @@ func (r *Repository) AddTelegramUser(
 	defer rows.Close()
 
 	if !rows.Next() {
-		return 0, fmt.Errorf("user %s not added: %w", username, err)
+		if err = rows.Err(); err != nil {
+			return 0, fmt.Errorf("user %s not added: %w", username, err)
+		}
+
+		return 0, fmt.Errorf("user %s not added", username)
 	}
 
 	var id int

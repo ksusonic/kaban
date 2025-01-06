@@ -7,31 +7,28 @@ import (
 	"log/slog"
 	"testing"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/ksusonic/kanban/internal/repository/postgres"
-	"github.com/ksusonic/kanban/internal/repository/users"
-
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/require"
 
 	"github.com/ksusonic/kanban/internal/models"
+	"github.com/ksusonic/kanban/internal/storage/postgres"
+	"github.com/ksusonic/kanban/internal/storage/users"
 )
 
-func TestRepository_Insert(t *testing.T) {
-	ctx := context.Background()
-
-	_ = godotenv.Load(".env", "../../../.env")
+func TestRepository(t *testing.T) {
+	err := godotenv.Load("../../../.env")
+	require.NoError(t, err)
 
 	poolCfg, err := pgxpool.ParseConfig("")
 	require.NoError(t, err)
 
-	pool, err := pgxpool.NewWithConfig(ctx, poolCfg)
+	pool, err := pgxpool.NewWithConfig(context.Background(), poolCfg)
 	require.NoError(t, err)
 	defer pool.Close()
 
-	db, closeDB, err := postgres.NewDB(ctx, slog.Default())
+	db, closeDB, err := postgres.NewDB(context.Background(), slog.Default())
 	require.NoError(t, err)
 	defer closeDB()
 
@@ -46,17 +43,17 @@ func TestRepository_Insert(t *testing.T) {
 		AvatarURL:  &testAvatar,
 	}
 
-	txCtx, err := db.TransactionContext(ctx)
+	ctx, err := db.TransactionContext(context.Background())
 	require.NoError(t, err)
 
 	defer func(db *postgres.DB, ctx context.Context) {
 		if err = db.Rollback(ctx); err != nil {
 			panic(err)
 		}
-	}(db, txCtx)
+	}(db, ctx)
 
 	userID, err := repo.AddTelegramUser(
-		txCtx,
+		ctx,
 		expectedUser.Username,
 		telegramID,
 		expectedUser.FirstName,
@@ -66,12 +63,12 @@ func TestRepository_Insert(t *testing.T) {
 
 	expectedUser.ID = userID
 
-	actual, err := repo.GetByID(txCtx, userID)
+	actual, err := repo.GetByID(ctx, userID)
 	require.NoError(t, err)
 
 	assert.Equal(t, expectedUser, actual)
 
-	actual, err = repo.GetByTelegramID(txCtx, telegramID)
+	actual, err = repo.GetByTelegramID(ctx, telegramID)
 	require.NoError(t, err)
 
 	assert.Equal(t, expectedUser, actual)

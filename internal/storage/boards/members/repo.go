@@ -1,6 +1,6 @@
-package users
+package members
 
-import "github.com/ksusonic/kanban/internal/repository/postgres"
+import "github.com/ksusonic/kanban/internal/storage/postgres"
 
 type Repository struct {
 	db *postgres.DB

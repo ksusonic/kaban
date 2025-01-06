@@ -21,18 +21,24 @@ tasks  -->  lists;
 
 <p>2. Prepare environment</p>
 
-```
+```bash
 docker compose up -d
 ```
 
 <p>3. Create and edit .env file</p>
 
-```
+```bash
 cp .env.example .env
 ```
 
 <p>4. Launch service</p>
 
-```
+```bash
 go run cmd/service/main.go
+```
+
+<p>5. Run tests (integration is optional)</p>
+
+```bash
+go test ./... --tags integration
 ```
