@@ -16,8 +16,8 @@ import (
 
 type IntegrationTestSuite struct {
 	suite.Suite
-	closeDB    func()
-	repository *storage.Repository
+	closeDB func()
+	repo    *storage.Repository
 }
 
 func (suite *IntegrationTestSuite) SetupTest() {
@@ -26,7 +26,7 @@ func (suite *IntegrationTestSuite) SetupTest() {
 		log.Fatal("Error loading .env file")
 	}
 
-	suite.repository, suite.closeDB, err = storage.NewRepository(context.Background(), logger.NewDisabled())
+	suite.repo, suite.closeDB, err = storage.NewRepository(context.Background(), logger.NewDisabled())
 	if err != nil {
 		suite.T().Fatal(err)
 	}

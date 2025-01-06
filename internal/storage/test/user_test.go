@@ -24,16 +24,16 @@ func (suite *IntegrationTestSuite) TestUser() {
 		AvatarURL:  &testAvatar,
 	}
 
-	ctx, err := suite.repository.TransactionContext(context.Background())
+	ctx, err := suite.repo.TransactionContext(context.Background())
 	require.NoError(t, err)
 
 	defer func(db *postgres.DB, ctx context.Context) {
 		if err = db.Rollback(ctx); err != nil {
 			panic(err)
 		}
-	}(suite.repository.DB, ctx)
+	}(suite.repo.DB, ctx)
 
-	userID, err := suite.repository.UserRepo().AddTelegramUser(
+	userID, err := suite.repo.UserRepo().AddTelegramUser(
 		ctx,
 		expectedUser.Username,
 		telegramID,
@@ -44,12 +44,12 @@ func (suite *IntegrationTestSuite) TestUser() {
 
 	expectedUser.ID = userID
 
-	actual, err := suite.repository.UserRepo().GetByID(ctx, userID)
+	actual, err := suite.repo.UserRepo().GetByID(ctx, userID)
 	require.NoError(t, err)
 
 	assert.Equal(t, expectedUser, actual)
 
-	actual, err = suite.repository.UserRepo().GetByTelegramID(ctx, telegramID)
+	actual, err = suite.repo.UserRepo().GetByTelegramID(ctx, telegramID)
 	require.NoError(t, err)
 
 	assert.Equal(t, expectedUser, actual)

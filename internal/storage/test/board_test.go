@@ -15,16 +15,16 @@ import (
 func (suite *IntegrationTestSuite) TestBoard() {
 	t := suite.T()
 
-	ctx, err := suite.repository.TransactionContext(context.Background())
+	ctx, err := suite.repo.TransactionContext(context.Background())
 	require.NoError(t, err)
 
 	defer func(db *postgres.DB, ctx context.Context) {
 		if err = db.Rollback(ctx); err != nil {
 			panic(err)
 		}
-	}(suite.repository.DB, ctx)
+	}(suite.repo.DB, ctx)
 
-	userID, err := suite.repository.UserRepo().AddTelegramUser(ctx, "testman", 123, "tester", nil)
+	userID, err := suite.repo.UserRepo().AddTelegramUser(ctx, "testman", 123, "tester", nil)
 	require.NoError(t, err)
 
 	expectedBoard := models.Board{
@@ -33,7 +33,7 @@ func (suite *IntegrationTestSuite) TestBoard() {
 		OwnerID: userID,
 	}
 
-	boardID, err := suite.repository.BoardRepo().BoardAdd(
+	boardID, err := suite.repo.BoardRepo().BoardAdd(
 		ctx,
 		expectedBoard.Name,
 		expectedBoard.Slug,
@@ -42,7 +42,7 @@ func (suite *IntegrationTestSuite) TestBoard() {
 	require.NoError(t, err)
 	expectedBoard.ID = boardID
 
-	actualBoards, err := suite.repository.BoardRepo().BoardsGetAvailable(
+	actualBoards, err := suite.repo.BoardRepo().BoardsGetAvailable(
 		ctx,
 		userID,
 	)
@@ -52,7 +52,7 @@ func (suite *IntegrationTestSuite) TestBoard() {
 	assert.Equal(t, []models.Board{expectedBoard}, actualBoards)
 
 	// double add
-	_, err = suite.repository.BoardRepo().BoardAdd(
+	_, err = suite.repo.BoardRepo().BoardAdd(
 		ctx,
 		expectedBoard.Name,
 		expectedBoard.Slug,
@@ -66,15 +66,15 @@ func (suite *IntegrationTestSuite) TestBoard() {
 			testGuestID     int
 			availableBoards []models.Board
 		)
-		testGuestID, err = suite.repository.UserRepo().AddTelegramUser(ctx, "test-guest", 124, "tester", nil)
+		testGuestID, err = suite.repo.UserRepo().AddTelegramUser(ctx, "test-guest", 124, "tester", nil)
 		require.NoError(t, err)
 
-		availableBoards, err = suite.repository.BoardRepo().BoardsGetAvailable(ctx, testGuestID)
+		availableBoards, err = suite.repo.BoardRepo().BoardsGetAvailable(ctx, testGuestID)
 		require.NoError(t, err)
 		assert.Empty(t, availableBoards)
 
 		// try to double add board
-		_, err = suite.repository.BoardRepo().BoardAdd(
+		_, err = suite.repo.BoardRepo().BoardAdd(
 			ctx,
 			expectedBoard.Name,
 			expectedBoard.Slug,
@@ -82,18 +82,18 @@ func (suite *IntegrationTestSuite) TestBoard() {
 		)
 		require.ErrorIs(t, err, models.ErrAlreadyExists)
 
-		err = suite.repository.BoardMembersRepo().MembersAdd(ctx, boardID, testGuestID, models.AccessLevelRO)
+		err = suite.repo.BoardMembersRepo().MembersAdd(ctx, boardID, testGuestID, models.AccessLevelRO)
 		require.NoError(t, err)
 
-		availableBoards, err = suite.repository.BoardRepo().BoardsGetAvailable(ctx, testGuestID)
+		availableBoards, err = suite.repo.BoardRepo().BoardsGetAvailable(ctx, testGuestID)
 		require.NoError(t, err)
 		assert.Len(t, availableBoards, 1)
 		assert.Equal(t, expectedBoard, availableBoards[0])
 
-		err = suite.repository.BoardMembersRepo().MembersDelete(ctx, boardID, testGuestID)
+		err = suite.repo.BoardMembersRepo().MembersDelete(ctx, boardID, testGuestID)
 		require.NoError(t, err)
 
-		availableBoards, err = suite.repository.BoardRepo().BoardsGetAvailable(ctx, testGuestID)
+		availableBoards, err = suite.repo.BoardRepo().BoardsGetAvailable(ctx, testGuestID)
 		require.NoError(t, err)
 		assert.Empty(t, availableBoards)
 	}
