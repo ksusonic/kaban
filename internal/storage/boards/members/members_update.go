@@ -6,7 +6,7 @@ import (
 	"github.com/ksusonic/kanban/internal/models"
 )
 
-const boardMembersUpdateQuery = `
+const membersUpdateQuery = `
 	update board_members 
 	set
 	    access_level = coalesce($1, access_level),
@@ -17,14 +17,14 @@ const boardMembersUpdateQuery = `
 		and deleted_at is null
 	`
 
-func (r *Repository) BoardMembersUpdate(
+func (r *Repository) MembersUpdate(
 	ctx context.Context,
 	boardID, userID int,
 	accessLevel *models.AccessLevel,
 ) error {
 	_, err := r.db.Conn(ctx).Exec(
 		ctx,
-		boardMembersUpdateQuery,
+		membersUpdateQuery,
 		boardID,
 		userID,
 		accessLevel,

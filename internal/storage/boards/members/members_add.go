@@ -6,7 +6,7 @@ import (
 	"github.com/ksusonic/kanban/internal/models"
 )
 
-const boardMemberAddQuery = `
+const membersAddQuery = `
 	insert into board_members (board_id, user_id, access_level)
 	values ($1, $2, $3)
 	on conflict (board_id, user_id)
@@ -15,7 +15,7 @@ const boardMemberAddQuery = `
 					  updated_at   = now(),
 					  deleted_at   = null`
 
-func (r *Repository) BoardAddMember(
+func (r *Repository) MembersAdd(
 	ctx context.Context,
 	boardID int,
 	userID int,
@@ -23,7 +23,7 @@ func (r *Repository) BoardAddMember(
 ) error {
 	_, err := r.db.Conn(ctx).Exec(
 		ctx,
-		boardMemberAddQuery,
+		membersAddQuery,
 		boardID,
 		userID,
 		accessLevel,

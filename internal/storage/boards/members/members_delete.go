@@ -4,7 +4,7 @@ import (
 	"context"
 )
 
-const boardMembersDeleteQuery = `
+const membersDeleteQuery = `
 	update board_members 
 	set 
 		deleted_at = now()
@@ -13,14 +13,14 @@ const boardMembersDeleteQuery = `
 	    and user_id = $2 
 	    and deleted_at is null`
 
-func (r *Repository) BoardMembersDelete(
+func (r *Repository) MembersDelete(
 	ctx context.Context,
 	boardID int,
 	userID int,
 ) error {
 	_, err := r.db.Conn(ctx).Exec(
 		ctx,
-		boardMembersDeleteQuery,
+		membersDeleteQuery,
 		boardID,
 		userID,
 	)

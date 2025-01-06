@@ -7,14 +7,17 @@ import (
 
 	"github.com/ksusonic/kanban/internal/storage/boards"
 	"github.com/ksusonic/kanban/internal/storage/boards/members"
+	"github.com/ksusonic/kanban/internal/storage/boards/tasks"
 	"github.com/ksusonic/kanban/internal/storage/postgres"
 	"github.com/ksusonic/kanban/internal/storage/users"
 )
 
 type Repository struct {
+	*postgres.DB
 	userRepo     *users.Repository
 	boardRepo    *boards.Repository
 	boardMembers *members.Repository
+	boardTasks   *tasks.Repository
 }
 
 func NewRepository(
@@ -27,9 +30,11 @@ func NewRepository(
 	}
 
 	return &Repository{
+		DB:           db,
 		userRepo:     users.NewRepository(db),
 		boardRepo:    boards.NewRepository(db),
 		boardMembers: members.NewRepository(db),
+		boardTasks:   tasks.NewRepository(db),
 	}, closer, err
 }
 
@@ -43,4 +48,8 @@ func (r *Repository) BoardRepo() *boards.Repository {
 
 func (r *Repository) BoardMembersRepo() *members.Repository {
 	return r.boardMembers
+}
+
+func (r *Repository) BoardTasksRepo() *tasks.Repository {
+	return r.boardTasks
 }
