@@ -1,4 +1,4 @@
-<h1 align="center" id="title">Backend for kanban board</h1>
+<h1 align="center" id="title">Backend for Kabanted board</h1>
 
 <p align="center"><img src="https://socialify.git.ci/ksusonic/kaban/image?language=1&amp;owner=1&amp;name=1&amp;stargazers=1&amp;theme=Light" alt="project-image"></p>
 

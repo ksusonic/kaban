@@ -2,8 +2,6 @@ package jwt
 
 import "time"
 
-const issuer = "Kkaban board"
-
 type Auth struct {
 	key      []byte
 	tokenTTL time.Duration

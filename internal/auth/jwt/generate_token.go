@@ -8,15 +8,17 @@ import (
 	"github.com/ksusonic/kanban/internal/models"
 )
 
+const issuer = "Kabanted board"
+
 func (a *Auth) GenerateJWTToken(userID int) (*models.JWTToken, error) {
 	now := time.Now()
 	expiresAt := now.Add(a.tokenTTL)
 
 	claims := userClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
-			IssuedAt:  jwt.NewNumericDate(now),
-			ExpiresAt: jwt.NewNumericDate(expiresAt),
 			Issuer:    issuer,
+			ExpiresAt: jwt.NewNumericDate(expiresAt),
+			IssuedAt:  jwt.NewNumericDate(now),
 		},
 		UserID: userID,
 	}
