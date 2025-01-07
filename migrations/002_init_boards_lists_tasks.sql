@@ -10,6 +10,7 @@ create table if not exists boards
 );
 
 create index if not exists idx_boards_owner_id on boards (owner_id);
+create index if not exists idx_boards_slug on boards (slug);
 create index if not exists idx_boards_deleted_at on boards (deleted_at);
 
 create table if not exists board_members

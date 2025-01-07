@@ -3,6 +3,7 @@ package auth_test
 import (
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 	"time"
 
@@ -17,11 +18,14 @@ import (
 )
 
 func TestController_TelegramCallback(t *testing.T) {
-	t.Setenv("BOT_TOKEN", "super-secret-token")
+	botCfg := models.BotCfg{
+		Name:  "test bot",
+		Token: "super-secret-token",
+	}
 
 	type fields struct {
-		mockUserRepo   func(*gomock.Controller) *auth.MockuserRepo
-		mockAuthModule func(*gomock.Controller) *auth.MockauthModule
+		MockuserRepo   func(*gomock.Controller) *auth.MockuserRepo
+		MockauthModule func(*gomock.Controller) *auth.MockauthModule
 	}
 	type args struct {
 		query  string
@@ -44,20 +48,30 @@ func TestController_TelegramCallback(t *testing.T) {
 				method: http.MethodGet,
 			},
 			fields: fields{
-				mockUserRepo: func(ctrl *gomock.Controller) *auth.MockuserRepo {
+				MockuserRepo: func(ctrl *gomock.Controller) *auth.MockuserRepo {
 					mock := auth.NewMockuserRepo(ctrl)
 					mock.EXPECT().GetByTelegramID(gomock.Any(), int64(123)).
 						Return(&models.User{ID: 777}, nil)
 
 					return mock
 				},
-				mockAuthModule: func(ctrl *gomock.Controller) *auth.MockauthModule {
+				MockauthModule: func(ctrl *gomock.Controller) *auth.MockauthModule {
 					mock := auth.NewMockauthModule(ctrl)
 					mock.EXPECT().GenerateJWTToken(777).
 						Return(&models.JWTToken{
 							Token:   "JWT-TEST-TOKEN",
 							Expires: time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
 						}, nil)
+
+					mock.EXPECT().ValidateTelegramCallbackData(url.Values{
+						"id":         []string{"123"},
+						"first_name": []string{"Daniil"},
+						"username":   []string{"ksusonic"},
+						"auth_date":  []string{"123"},
+						"photo_url":  []string{"pic.jpg"},
+						"hash":       []string{"d7590bb4172bdb9029a2f08c976aeb86167037fcf788ba6c6a2aad849c8b3d1b"},
+						"next":       []string{"/"},
+					}).Return(true)
 
 					return mock
 				},
@@ -74,7 +88,7 @@ func TestController_TelegramCallback(t *testing.T) {
 				method: http.MethodGet,
 			},
 			fields: fields{
-				mockUserRepo: func(ctrl *gomock.Controller) *auth.MockuserRepo {
+				MockuserRepo: func(ctrl *gomock.Controller) *auth.MockuserRepo {
 					mock := auth.NewMockuserRepo(ctrl)
 					mock.EXPECT().GetByTelegramID(gomock.Any(), int64(123)).
 						Return(nil, models.ErrNotFound)
@@ -90,13 +104,23 @@ func TestController_TelegramCallback(t *testing.T) {
 
 					return mock
 				},
-				mockAuthModule: func(ctrl *gomock.Controller) *auth.MockauthModule {
+				MockauthModule: func(ctrl *gomock.Controller) *auth.MockauthModule {
 					mock := auth.NewMockauthModule(ctrl)
 					mock.EXPECT().GenerateJWTToken(777).
 						Return(&models.JWTToken{
 							Token:   "JWT-TEST-TOKEN",
 							Expires: time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
 						}, nil)
+
+					mock.EXPECT().ValidateTelegramCallbackData(url.Values{
+						"id":         []string{"123"},
+						"first_name": []string{"Daniil"},
+						"username":   []string{"ksusonic"},
+						"auth_date":  []string{"123"},
+						"photo_url":  []string{"pic.jpg"},
+						"hash":       []string{"d7590bb4172bdb9029a2f08c976aeb86167037fcf788ba6c6a2aad849c8b3d1b"},
+						"next":       []string{"/"},
+					}).Return(true)
 
 					return mock
 				},
@@ -105,17 +129,45 @@ func TestController_TelegramCallback(t *testing.T) {
 			expectedBody: `{"expires":"2009-11-10T23:00:00Z","token":"JWT-TEST-TOKEN"}`,
 		},
 		{
+			name: "invalid_hash",
+			args: args{
+				query: "/auth/tg-callback?" +
+					"next=%2f&id=123&first_name=Daniil&username=ksusonic&photo_url=pic.jpg&auth_date=123" +
+					"&hash=keklol",
+				method: http.MethodGet,
+			},
+			fields: fields{
+				MockuserRepo: auth.NewMockuserRepo,
+				MockauthModule: func(ctrl *gomock.Controller) *auth.MockauthModule {
+					mock := auth.NewMockauthModule(ctrl)
+					mock.EXPECT().ValidateTelegramCallbackData(url.Values{
+						"id":         []string{"123"},
+						"first_name": []string{"Daniil"},
+						"username":   []string{"ksusonic"},
+						"auth_date":  []string{"123"},
+						"photo_url":  []string{"pic.jpg"},
+						"hash":       []string{"keklol"},
+						"next":       []string{"/"},
+					}).Return(false)
+
+					return mock
+				},
+			},
+			expectedCode: http.StatusBadRequest,
+			expectedBody: `{"error":"validation error: telegram query data invalid"}`,
+		},
+		{
 			name: "no query",
 			args: args{
 				query:  "/auth/tg-callback",
 				method: http.MethodGet,
 			},
 			fields: fields{
-				mockUserRepo:   auth.NewMockuserRepo,
-				mockAuthModule: auth.NewMockauthModule,
+				MockuserRepo:   auth.NewMockuserRepo,
+				MockauthModule: auth.NewMockauthModule,
 			},
 			expectedCode: http.StatusBadRequest,
-			expectedBody: `{"error":"validation"}`,
+			expectedBody: `{"error":"validation error: telegram query data invalid"}`,
 		},
 	}
 	for _, tt := range tests {
@@ -127,9 +179,10 @@ func TestController_TelegramCallback(t *testing.T) {
 
 			engine := gin.Default()
 			engine.GET("/auth/tg-callback", auth.NewController(
-				tt.fields.mockUserRepo(mockCtrl),
-				tt.fields.mockAuthModule(mockCtrl),
+				tt.fields.MockuserRepo(mockCtrl),
+				tt.fields.MockauthModule(mockCtrl),
 				logger.NewDisabled(),
+				botCfg,
 			).TelegramCallback)
 
 			req, err := http.NewRequest(tt.args.method, tt.args.query, nil)

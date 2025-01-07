@@ -10,12 +10,15 @@ func SetUser(c *gin.Context, identity *models.UserIdentity) {
 	c.Set(userContextKey, identity)
 }
 
-func GetUser(c *gin.Context) *models.UserIdentity {
-	if value, has := c.Get(userContextKey); has {
-		if typedValue, ok := value.(*models.UserIdentity); ok {
-			return typedValue
-		}
+func MustGetUser(c *gin.Context) *models.UserIdentity {
+	value, ok := c.Get(userContextKey)
+	if !ok {
+		panic("no user in context")
 	}
 
-	return nil
+	if identity, castOK := value.(*models.UserIdentity); castOK {
+		return identity
+	}
+
+	panic("no user in context")
 }

@@ -1,4 +1,4 @@
-package kanban
+package board
 
 import (
 	"context"
@@ -7,29 +7,29 @@ import (
 )
 
 type boardRepo interface {
-	BoardsGetAvailable(
-		ctx context.Context,
-		userID int,
-	) ([]models.Board, error)
+	BoardsGetAvailable(ctx context.Context, userID int) ([]models.Board, error)
+	BoardsGetBySlug(ctx context.Context, slug string) (*models.Board, error)
 	BoardAdd(
 		ctx context.Context,
 		name, slug string,
 		ownerID int,
 	) (int, error)
-	BoardDelete(
-		ctx context.Context,
-		id int,
-	) error
+	BoardDelete(ctx context.Context, id int) error
 }
 
 type boardMemberRepo interface {
-	BoardAddMember(
+	MembersAdd(
 		ctx context.Context,
 		boardID int,
 		userID int,
 		accessLevel models.AccessLevel,
 	) error
-	BoardDeleteMember(
+	MembersGet(
+		ctx context.Context,
+		boardID int,
+		userID int,
+	) (*models.AccessLevel, error)
+	MembersDelete(
 		ctx context.Context,
 		boardID int,
 		userID int,

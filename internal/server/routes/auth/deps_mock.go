@@ -11,6 +11,7 @@ package auth
 
 import (
 	context "context"
+	url "net/url"
 	reflect "reflect"
 
 	models "github.com/ksusonic/kanban/internal/models"
@@ -108,4 +109,18 @@ func (m *MockauthModule) GenerateJWTToken(userID int) (*models.JWTToken, error) 
 func (mr *MockauthModuleMockRecorder) GenerateJWTToken(userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateJWTToken", reflect.TypeOf((*MockauthModule)(nil).GenerateJWTToken), userID)
+}
+
+// ValidateTelegramCallbackData mocks base method.
+func (m *MockauthModule) ValidateTelegramCallbackData(query url.Values) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ValidateTelegramCallbackData", query)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// ValidateTelegramCallbackData indicates an expected call of ValidateTelegramCallbackData.
+func (mr *MockauthModuleMockRecorder) ValidateTelegramCallbackData(query any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateTelegramCallbackData", reflect.TypeOf((*MockauthModule)(nil).ValidateTelegramCallbackData), query)
 }

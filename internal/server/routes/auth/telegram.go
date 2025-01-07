@@ -8,33 +8,29 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/ksusonic/kanban/internal/auth/telegram"
 	"github.com/ksusonic/kanban/internal/models"
+	"github.com/ksusonic/kanban/internal/server/api"
 )
 
-type TelegramCallbackData struct {
-	ID        int64   `form:"id" binding:"required"`
-	FirstName string  `form:"first_name" binding:"required"`
-	Username  string  `form:"username" binding:"required"`
-	PhotoURL  *string `form:"photo_url"`
-	AuthDate  int64   `form:"auth_date"`
-	Hash      string  `form:"hash" binding:"required"`
-	Next      string  `form:"next"`
-}
+const validationErrorMessage = "telegram query data invalid"
 
 func (ctrl *Controller) TelegramCallback(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	var callbackData TelegramCallbackData
+	var callbackData models.TelegramCallback
 	if err := c.ShouldBindQuery(&callbackData); err != nil {
 		ctrl.log.WarnContext(ctx, "binding telegram callback", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "validation"})
+		c.JSON(http.StatusBadRequest, api.ErrorResponse{
+			Error: api.ErrorResponseValidationError(errors.New(validationErrorMessage)),
+		})
 		return
 	}
 
-	if !telegram.ValidateTelegramCallbackData(c.Request.URL.Query(), ctrl.botCfg.Token) {
-		ctrl.log.WarnContext(ctx, "telegram query data invalid", "query", c.Request.URL.RawQuery)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "bad query"})
+	if !ctrl.authModule.ValidateTelegramCallbackData(c.Request.URL.Query()) {
+		ctrl.log.WarnContext(ctx, validationErrorMessage, "query", c.Request.URL.RawQuery)
+		c.JSON(http.StatusBadRequest, api.ErrorResponse{
+			Error: api.ErrorResponseValidationError(errors.New(validationErrorMessage)),
+		})
 		return
 	}
 
@@ -59,7 +55,7 @@ func (ctrl *Controller) TelegramCallback(c *gin.Context) {
 	})
 }
 
-func (ctrl *Controller) handleTGUser(ctx context.Context, callbackData *TelegramCallbackData) (int, error) {
+func (ctrl *Controller) handleTGUser(ctx context.Context, callbackData *models.TelegramCallback) (int, error) {
 	// Check if already registered
 	user, err := ctrl.userRepo.GetByTelegramID(ctx, callbackData.ID)
 	if err == nil {

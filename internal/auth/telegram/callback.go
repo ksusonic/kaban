@@ -11,7 +11,7 @@ import (
 )
 
 // ValidateTelegramCallbackData https://core.telegram.org/widgets/login#checking-authorization
-func ValidateTelegramCallbackData(queryMap url.Values, token string) bool {
+func (t *Telegram) ValidateTelegramCallbackData(queryMap url.Values) bool {
 	dataParts := make([]string, 0, len(queryMap))
 
 	var hash = ""
@@ -30,7 +30,7 @@ func ValidateTelegramCallbackData(queryMap url.Values, token string) bool {
 
 	imploded := strings.Join(dataParts, "\n")
 	tokenHash := sha256.New()
-	_, _ = io.WriteString(tokenHash, token)
+	_, _ = io.WriteString(tokenHash, t.token)
 	hmacTokenHash := hmac.New(sha256.New, tokenHash.Sum(nil))
 	_, _ = io.WriteString(hmacTokenHash, imploded)
 	ss := hex.EncodeToString(hmacTokenHash.Sum(nil))

@@ -20,10 +20,22 @@ func TestSetUser_GetUser(t *testing.T) {
 		Accepted: nil,
 	}
 
-	assert.Nil(t, requestctx.GetUser(c))
+	t.Run("panic no user", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Errorf("panic assert")
+			}
+		}()
 
-	identity := &models.UserIdentity{UserID: 123}
-	requestctx.SetUser(c, identity)
+		requestctx.MustGetUser(c)
+	})
 
-	assert.Equal(t, identity, requestctx.GetUser(c))
+	t.Run("success", func(t *testing.T) {
+		identity := &models.UserIdentity{
+			UserID: 123,
+		}
+		requestctx.SetUser(c, identity)
+
+		assert.Equal(t, identity, requestctx.MustGetUser(c))
+	})
 }

@@ -1,8 +1,6 @@
 package auth
 
 import (
-	"os"
-
 	"github.com/ksusonic/kanban/internal/logger"
 	"github.com/ksusonic/kanban/internal/models"
 )
@@ -18,12 +16,8 @@ func NewController(
 	userRepo userRepo,
 	authModule authModule,
 	log logger.Logger,
+	botCfg models.BotCfg,
 ) *Controller {
-	botCfg := models.BotCfg{
-		Name:  os.Getenv("BOT_NAME"),
-		Token: os.Getenv("BOT_TOKEN"),
-	}
-
 	return &Controller{
 		userRepo:   userRepo,
 		authModule: authModule,

@@ -3,6 +3,7 @@ package auth
 
 import (
 	"context"
+	"net/url"
 
 	"github.com/ksusonic/kanban/internal/models"
 )
@@ -20,4 +21,5 @@ type userRepo interface {
 
 type authModule interface {
 	GenerateJWTToken(userID int) (*models.JWTToken, error)
+	ValidateTelegramCallbackData(query url.Values) bool
 }

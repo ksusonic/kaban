@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/ksusonic/kanban/internal/models"
+	"github.com/ksusonic/kanban/internal/server/api"
 	"github.com/ksusonic/kanban/internal/server/requestctx"
 )
 
@@ -18,7 +19,9 @@ func AuthRequired(authProvider AuthProvider) gin.HandlerFunc {
 		tokenValue := c.GetHeader("Authorization")
 		userIdentity, err := authProvider.CheckToken(tokenValue)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "authorization required"})
+			c.JSON(http.StatusUnauthorized, api.ErrorResponse{
+				Error: "authorization required"},
+			)
 			c.Abort()
 			return
 		}

@@ -1,15 +1,15 @@
-package kanban
+package board
 
 type Feature struct {
 	boardRepo       boardRepo
 	boardMemberRepo boardMemberRepo
 }
 
-func NewFeature(
+func New(
 	boardRepo boardRepo,
 	boardMemberRepo boardMemberRepo,
-) Feature {
-	return Feature{
+) *Feature {
+	return &Feature{
 		boardRepo:       boardRepo,
 		boardMemberRepo: boardMemberRepo,
 	}
